@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model User {
+  id         String              @id @default(cuid())
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @default(now())
+  email      String              @unique
+  workspaces UsersOnWorkspaces[]
+  name       String?
+}
+
+model Workspace {
+  id        String              @id @default(cuid())
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @default(now())
+  users     UsersOnWorkspaces[]
+  name      String
+}
+
+enum MembershipRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model UsersOnWorkspaces {
+  user        User           @relation(fields: [userId], references: [id])
+  userId      String
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  role        MembershipRole
+  joinedAt    DateTime       @default(now())
+
+  @@id([userId, workspaceId])
+}
